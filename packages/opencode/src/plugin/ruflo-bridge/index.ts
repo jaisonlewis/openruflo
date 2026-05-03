@@ -299,6 +299,14 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
           || input.title?.startsWith('mcp__ruflo__');
         if (isMcpRuflo) {
           output.status = 'allow';
+        } else if (options.hooks.notification) {
+          // Non-ruflo permission: user needs to look at the terminal.
+          // Fire-and-forget — don't block the permission dialog.
+          notify(ocCtx, log, {
+            title: 'ruflo: permission required',
+            body: `${input.title ?? 'unknown'}: ${patterns.join(', ').slice(0, 200)}`,
+            urgency: 'critical',
+          }).catch(() => undefined);
         }
       },
 
@@ -380,6 +388,13 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
                 ]);
               }
               await pool.observe({ type: 'session.idle', sessionID });
+              if (options.hooks.notification) {
+                await notify(ocCtx, log, {
+                  title: 'ruflo: task complete',
+                  body: `Agent is idle and ready — session ${sessionID.slice(0, 8)}`,
+                  urgency: 'normal',
+                });
+              }
             }
             return;
           }
@@ -388,6 +403,13 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
           case 'session.idle': {
             const sessionID = String(evt.properties?.sessionID ?? 'unknown');
             await pool.observe({ type: 'session.idle', sessionID });
+            if (options.hooks.notification) {
+              await notify(ocCtx, log, {
+                title: 'ruflo: agent idle',
+                body: `Session ${sessionID.slice(0, 8)} finished — ready for more work`,
+                urgency: 'low',
+              });
+            }
             return;
           }
 
