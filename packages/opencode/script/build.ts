@@ -1,4 +1,8 @@
 #!/usr/bin/env bun
+// Build notes for openruflo on Windows:
+//   BUN_JSC_largeHeapSize=$((2*1024*1024*1024)) bun --smol run build -- --single --skip-embed-web-ui --skip-install
+// The --smol flag + 2 GB JSC largeHeapSize prevents the OOM crash that occurs
+// when bun compiles the full binary on Windows x64 with the default 32 MB heap ceiling.
 
 import { $ } from "bun"
 import fs from "fs"
