@@ -68,6 +68,14 @@ export interface RufloBridgeOptions {
     daemonOutputPath: string;
     daemonIntervalMs: number;
   };
+  memory: {
+    /** Snapshot session context to `ruflo memory store` on session-end. */
+    enabled: boolean;
+    /** Key prefix for memory entries. Default: "session". */
+    keyPrefix: string;
+    /** TTL in seconds passed to ruflo memory store. 0 = no TTL. */
+    ttlSeconds: number;
+  };
 }
 
 export const DEFAULT_BRIDGE_OPTIONS: RufloBridgeOptions = {
@@ -99,6 +107,11 @@ export const DEFAULT_BRIDGE_OPTIONS: RufloBridgeOptions = {
     daemonOutputPath: DEFAULT_STATUSLINE_OPTIONS.daemonOutputPath,
     daemonIntervalMs: DEFAULT_STATUSLINE_OPTIONS.daemonIntervalMs,
   },
+  memory: {
+    enabled: true,
+    keyPrefix: 'session',
+    ttlSeconds: 0,
+  },
 };
 
 export function mergeOptions(user: Partial<RufloBridgeOptions> = {}): RufloBridgeOptions {
@@ -108,6 +121,7 @@ export function mergeOptions(user: Partial<RufloBridgeOptions> = {}): RufloBridg
     hooks: { ...DEFAULT_BRIDGE_OPTIONS.hooks, ...(user.hooks ?? {}) },
     agentPool: { ...DEFAULT_BRIDGE_OPTIONS.agentPool, ...(user.agentPool ?? {}) },
     statusline: { ...DEFAULT_BRIDGE_OPTIONS.statusline, ...(user.statusline ?? {}) },
+    memory: { ...DEFAULT_BRIDGE_OPTIONS.memory, ...(user.memory ?? {}) },
   };
 }
 
@@ -156,6 +170,26 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
     process.on('exit', cleanup);
     process.on('SIGINT', cleanup);
     process.on('SIGTERM', cleanup);
+
+    /** Persist a session snapshot to `ruflo memory store`. Fire-and-forget. */
+    const snapshotMemory = (sessionID: string, extra: Record<string, unknown> = {}): void => {
+      if (!options.memory.enabled) return;
+      const key = `${options.memory.keyPrefix}:${sessionID}`;
+      const value = JSON.stringify({
+        sessionID,
+        snapshotAt: new Date().toISOString(),
+        ...extra,
+      });
+      const argv = [
+        options.cliCommand,
+        ...options.cliArgs,
+        'memory', 'store',
+        '-k', key,
+        '-v', value,
+        ...(options.memory.ttlSeconds > 0 ? ['--ttl', String(options.memory.ttlSeconds)] : []),
+      ];
+      runShell(ocCtx, argv, options.timeoutMs, log).catch(() => undefined);
+    };
 
     /** Run a `ruflo hooks <args>` subcommand. */
     const runHook = async (args: string[]): Promise<void> => {
@@ -295,8 +329,9 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
         const patterns = Array.isArray(input.pattern) ? input.pattern
           : input.pattern ? [input.pattern]
           : [];
-        const isMcpRuflo = patterns.some((p: string) => p.startsWith('mcp__ruflo__'))
-          || input.title?.startsWith('mcp__ruflo__');
+        const isMcpRuflo = patterns.some(
+            (p: string) => p.startsWith('mcp__ruflo__') || p.startsWith('mcp__agent-spawner__'),
+          ) || input.title?.startsWith('mcp__ruflo__') || input.title?.startsWith('mcp__agent-spawner__');
         if (isMcpRuflo) {
           output.status = 'allow';
         } else if (options.hooks.notification) {
@@ -361,11 +396,12 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
             return;
           }
 
-          // Session deleted → session-end
+          // Session deleted → session-end + memory snapshot
           case 'session.deleted': {
             if (!options.hooks.stop) return;
             const sessionID = String(evt.properties?.sessionID ?? evt.properties?.id ?? 'unknown');
             await runHook(['session-end', '--session-id', sessionID]);
+            snapshotMemory(sessionID, { trigger: 'session.deleted' });
             return;
           }
 
@@ -388,6 +424,7 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
                 ]);
               }
               await pool.observe({ type: 'session.idle', sessionID });
+              snapshotMemory(sessionID, { trigger: 'session.status:idle' });
               if (options.hooks.notification) {
                 await notify(ocCtx, log, {
                   title: 'ruflo: task complete',
