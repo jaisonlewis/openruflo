@@ -22,22 +22,49 @@
 
 ## Requirements
 
-- [Bun](https://bun.sh) ≥ 1.3.13
 - [ruflo](https://github.com/jaisonlewis/ruflo) installed and in PATH
-- [sentrux](https://github.com/jaisonlewis/sentrux) (optional, for quality gates)
+- [sentrux](https://github.com/jaisonlewis/sentrux) installed and in PATH
 - Windows x64 / macOS / Linux
+- [Bun](https://bun.sh) ≥ 1.3.13 _(build from source only)_
 
 ---
 
 ## Installation
 
-### From binary (recommended)
+### Windows (recommended)
 
 ```powershell
-# Windows — download latest release and add to PATH
+# 1. Install ruflo
+npm install -g ruflo
+
+# 2. Install sentrux
+npm install -g sentrux
+
+# 3. Install openruflo
 curl -L https://github.com/jaisonlewis/openruflo/releases/latest/download/openruflo-windows-x64.zip -o openruflo.zip
-Expand-Archive openruflo.zip -DestinationPath $env:USERPROFILE\bin
-# Ensure $env:USERPROFILE\bin is in PATH
+Expand-Archive openruflo.zip -DestinationPath "$env:USERPROFILE\bin"
+# Add $env:USERPROFILE\bin to PATH if not already there
+
+# 4. Install the agent-spawner
+curl -L https://github.com/jaisonlewis/openruflo/releases/latest/download/openruflo-agent-spawner-windows-x64.zip -o spawner.zip
+Expand-Archive spawner.zip -DestinationPath "$env:USERPROFILE\bin"
+```
+
+### macOS / Linux
+
+```bash
+# 1. Install ruflo
+npm install -g ruflo
+
+# 2. Install sentrux
+npm install -g sentrux
+
+# 3. Install openruflo
+curl -L https://github.com/jaisonlewis/openruflo/releases/latest/download/openruflo-linux-x64.tar.gz | tar xz -C ~/.local/bin
+# macOS: use openruflo-darwin-arm64.tar.gz or openruflo-darwin-x64.tar.gz
+
+# 4. Install the agent-spawner
+curl -L https://github.com/jaisonlewis/openruflo/releases/latest/download/openruflo-agent-spawner-linux-x64.tar.gz | tar xz -C ~/.local/bin
 ```
 
 ### From source
@@ -46,20 +73,19 @@ Expand-Archive openruflo.zip -DestinationPath $env:USERPROFILE\bin
 git clone https://github.com/jaisonlewis/openruflo
 cd openruflo
 
-# Windows build (avoids OOM)
+# Build openruflo binary
 cd packages/opencode
-bun run build:win
-# Binary output: dist/openruflo-windows-x64/bin/openruflo.exe
+bun run build:win      # Windows (avoids JSC heap OOM)
+# bun run build        # macOS / Linux
+# Output: dist/openruflo-windows-x64/bin/openruflo.exe
+
+# Build agent-spawner
+cd ../../agent-spawner
+bun install && bun run build
+# Output: dist/openruflo-agent-spawner.exe
 ```
 
-### Agent-spawner MCP server
-
-```bash
-cd agent-spawner
-bun install
-bun run build        # produces openruflo-agent-spawner binary
-# Copy to a PATH location or let openruflo auto-detect it
-```
+> **Bundled binaries**: release zips include `openruflo`, `openruflo-agent-spawner`, and `sentrux` in the same directory. openruflo auto-detects sibling binaries at startup — no PATH configuration required.
 
 ---
 
@@ -78,8 +104,8 @@ openruflo
 ```
 
 That's it. openruflo will:
-- Auto-detect and start the agent-spawner MCP server
-- Auto-detect sentrux if installed
+- Auto-start the agent-spawner MCP server (sibling binary or PATH)
+- Auto-start sentrux MCP server (sibling binary or PATH) — warn if missing
 - Inject session context from ruflo memory on every session start
 - Snapshot memory on session end
 
@@ -104,8 +130,8 @@ openruflo
 │   ├── list_agents / cancel_agent
 │   ├── read_handoff / list_handoffs
 │   └── task_create / task_list / task_status / task_cancel / task_assign / task_retry
-└── sentrux MCP server (auto-started if installed)
-    └── architecture quality gates
+└── sentrux MCP server (auto-started, default)
+    └── architecture quality gates + baseline diffs
 ```
 
 ---

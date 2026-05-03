@@ -59,14 +59,29 @@ export function resolveBuiltinMcpServers(
 ): Record<string, ConfigMCP.Info> {
   const result: Record<string, ConfigMCP.Info> = {}
 
-  // ── Sentrux — architectural quality sensor ────────────────────────────────
+  // ── Sentrux — architectural quality sensor (default, bundled with openruflo) ─
   if (!disabled("sentrux") && !("sentrux" in userConfig)) {
-    const cmd = findBinary("sentrux")
-    if (cmd) {
+    // Check sibling dir first (bundled alongside openruflo binary in releases)
+    const siblingDir = process.execPath ? path.dirname(process.execPath) : null
+    let sentruxCmd: string | null = null
+    if (siblingDir) {
+      const sibling = path.join(siblingDir, "sentrux" + (process.platform === "win32" ? ".exe" : ""))
+      if (fs.existsSync(sibling)) sentruxCmd = sibling
+    }
+    if (!sentruxCmd) sentruxCmd = findBinary("sentrux")
+
+    if (sentruxCmd) {
       result["sentrux"] = {
         type: "local" as const,
-        command: [cmd, "--mcp"],
+        command: [sentruxCmd, "--mcp"],
       }
+    } else {
+      // Sentrux is a default part of openruflo — warn once if missing
+      console.warn(
+        "[openruflo] sentrux not found. Install it to enable quality gates and architecture analysis:\n" +
+        "  npm install -g sentrux\n" +
+        "  # or: https://github.com/jaisonlewis/sentrux/releases"
+      )
     }
   }
 
