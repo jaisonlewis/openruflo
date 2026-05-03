@@ -1,141 +1,398 @@
-<p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The open source AI coding agent.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
-</p>
+# openruflo
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
-</p>
-
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+> openruflo is a fork of [opencode](https://github.com/opencode-ai/opencode) v1.14.33 with deep ruflo integration — persistent memory, sub-agent orchestration, task tracking, notification hooks, and a full workflow command set.
 
 ---
 
-### Installation
+## What's different from opencode
 
-```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
-
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS and Linux (recommended, always up to date)
-brew install opencode              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # Any OS
-nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev branch
-```
-
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
-
-### Desktop App (BETA)
-
-OpenCode is also available as a desktop application. Download directly from the [releases page](https://github.com/anomalyco/opencode/releases) or [opencode.ai/download](https://opencode.ai/download).
-
-| Platform              | Download                              |
-| --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
-| Linux                 | `.deb`, `.rpm`, or AppImage           |
-
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
-```
-
-#### Installation Directory
-
-The install script respects the following priority order for the installation path:
-
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if it exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
-
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
-```
-
-### Agents
-
-OpenCode includes two built-in agents you can switch between with the `Tab` key.
-
-- **build** - Default, full-access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
-
-Also included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://opencode.ai/docs/agents).
-
-### Documentation
-
-For more info on how to configure OpenCode, [**head over to our docs**](https://opencode.ai/docs).
-
-### Contributing
-
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
-
-### Building on OpenCode
-
-If you are working on a project that's related to OpenCode and is using "opencode" as part of its name, for example "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in any way.
-
-### FAQ
-
-#### How is this different from Claude Code?
-
-It's very similar to Claude Code in terms of capability. Here are the key differences:
-
-- 100% open source
-- Not coupled to any provider. Although we recommend the models we provide through [OpenCode Zen](https://opencode.ai/zen), OpenCode can be used with Claude, OpenAI, Google, or even local models. As models evolve, the gaps between them will close and pricing will drop, so being provider-agnostic is important.
-- Out-of-the-box LSP support
-- A focus on TUI. OpenCode is built by neovim users and the creators of [terminal.shop](https://terminal.shop); we are going to push the limits of what's possible in the terminal.
-- A client/server architecture. This, for example, can allow OpenCode to run on your computer while you drive it remotely from a mobile app, meaning that the TUI frontend is just one of the possible clients.
+| Feature | opencode | openruflo |
+|---|---|---|
+| Session memory across restarts | ❌ | ✅ ruflo memory |
+| Sub-agent spawning | ❌ | ✅ agent-spawner MCP |
+| Task tracking | ❌ | ✅ ruflo task CLI |
+| Notifications (idle/permission/error) | ❌ | ✅ ruflo bridge hooks |
+| Auto-approve ruflo/agent-spawner tools | ❌ | ✅ |
+| Workflow slash commands | ❌ | ✅ 13 commands |
+| AI coding vocabulary skill | ❌ | ✅ on-demand |
+| Architectural decision logging | ❌ | ✅ /decide |
+| Brag Doc / perf review generation | ❌ | ✅ /brag, /peer |
 
 ---
 
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+## Requirements
+
+- [Bun](https://bun.sh) ≥ 1.3.13
+- [ruflo](https://github.com/jaisonlewis/ruflo) installed and in PATH
+- [sentrux](https://github.com/jaisonlewis/sentrux) (optional, for quality gates)
+- Windows x64 / macOS / Linux
+
+---
+
+## Installation
+
+### From binary (recommended)
+
+```powershell
+# Windows — download latest release and add to PATH
+curl -L https://github.com/jaisonlewis/openruflo/releases/latest/download/openruflo-windows-x64.zip -o openruflo.zip
+Expand-Archive openruflo.zip -DestinationPath $env:USERPROFILE\bin
+# Ensure $env:USERPROFILE\bin is in PATH
+```
+
+### From source
+
+```bash
+git clone https://github.com/jaisonlewis/openruflo
+cd openruflo
+
+# Windows build (avoids OOM)
+cd packages/opencode
+bun run build:win
+# Binary output: dist/openruflo-windows-x64/bin/openruflo.exe
+```
+
+### Agent-spawner MCP server
+
+```bash
+cd agent-spawner
+bun install
+bun run build        # produces openruflo-agent-spawner binary
+# Copy to a PATH location or let openruflo auto-detect it
+```
+
+---
+
+## Quick Start
+
+```bash
+# 1. Initialize ruflo in your project
+ruflo init
+ruflo memory init
+
+# 2. Start openruflo
+openruflo
+
+# 3. Initialize the workflow (type in the openruflo chat)
+/ruflo
+```
+
+That's it. openruflo will:
+- Auto-detect and start the agent-spawner MCP server
+- Auto-detect sentrux if installed
+- Inject session context from ruflo memory on every session start
+- Snapshot memory on session end
+
+---
+
+## Architecture
+
+```
+openruflo
+├── opencode core (v1.14.33)
+│   ├── TUI / Web UI
+│   ├── LLM provider adapters (Anthropic, OpenAI, Gemini, ...)
+│   └── Plugin system
+├── ruflo-bridge (INTERNAL_PLUGIN)
+│   ├── session-restore  → ruflo memory search → inject context
+│   ├── session-end      → ruflo memory store (snapshot)
+│   ├── permission.ask   → auto-approve mcp__ruflo__* + mcp__agent-spawner__*
+│   ├── session.idle     → ruflo notify (low urgency)
+│   └── session.error    → ruflo notify (critical)
+├── agent-spawner MCP server (auto-started)
+│   ├── spawn_agent / get_agent_status / collect_agent_result
+│   ├── list_agents / cancel_agent
+│   ├── read_handoff / list_handoffs
+│   └── task_create / task_list / task_status / task_cancel / task_assign / task_retry
+└── sentrux MCP server (auto-started if installed)
+    └── architecture quality gates
+```
+
+---
+
+## Global Configuration
+
+Config lives at `%APPDATA%\opencode\openruflo.json` (Windows) or `~/.config/opencode/openruflo.json` (Linux/macOS).
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "agent-spawner": {
+      "type": "local",
+      "command": ["openruflo-agent-spawner", "--mcp"],
+      "enabled": true
+    },
+    "sentrux": {
+      "type": "local",
+      "command": ["sentrux", "--mcp"],
+      "enabled": true
+    }
+  }
+}
+```
+
+---
+
+## Slash Commands
+
+All commands are globally available in every session. Type them in the openruflo chat.
+
+### Workflow
+
+| Command | Description |
+|---|---|
+| `/ruflo` | Initialize ruflo+sentrux and build from a plan file using sub-agents |
+| `/standup` | Generate today's standup from memory and open tasks |
+| `/dump` | Brain dump — capture loose thoughts, classify and store them |
+| `/wrap-up` | End-of-session summary — file decisions, wins, snapshot context |
+
+### Tracking
+
+| Command | Description |
+|---|---|
+| `/tasks` | Show open tasks from ruflo task system |
+| `/goals` | Show current goals and map progress |
+| `/projects` | List active projects with status and recent activity |
+| `/wins` | List recent wins (for perf reviews, Brag Doc) |
+
+### Recording
+
+| Command | Description |
+|---|---|
+| `/decide` | Record an architectural/technical decision with rationale |
+| `/incident` | Log an incident with timeline, impact, and resolution |
+
+### Review & Reflection
+
+| Command | Description |
+|---|---|
+| `/retro` | Sprint retrospective — what went well, what didn't, what to change |
+| `/peer` | Generate peer review / 360 feedback talking points |
+| `/brag` | Generate a Brag Document entry from wins and decisions |
+
+---
+
+## Sub-Agent Workflow (`/ruflo`)
+
+The `/ruflo` command orchestrates multi-phase builds using sub-agents.
+
+### What it does
+1. Finds a `*plan.md` or `AGENTS.md` in the working directory
+2. Runs `ruflo init && ruflo start`
+3. Takes a sentrux baseline (`sentrux gate --save`)
+4. Spawns sub-agents per phase via `spawn_agent`
+5. Collects results via `collect_agent_result`
+6. Runs `sentrux gate` and reports quality delta
+
+### Handoff protocol
+Sub-agents should end their output with:
+```
+<<<HANDOFF>>>
+{
+  "status": "ok",
+  "summary": "one sentence describing what was done",
+  "files": ["path/to/file1.ts", "path/to/file2.ts"],
+  "next": ["optional follow-up task"]
+}
+<<<END_HANDOFF>>>
+```
+After collection, call `read_handoff(agentId)` to get the parsed envelope.
+
+### Example plan file (`plan.md`)
+```markdown
+# My Project Plan
+
+## Phase 1: Foundation
+Build the core data models and database schema.
+Files: src/models/*.ts, migration/
+
+## Phase 2: API
+Implement REST endpoints.
+Files: src/api/*.ts
+
+## Phase 3: Tests
+Write integration tests.
+Files: test/*.test.ts
+```
+
+---
+
+## MCP Tools (agent-spawner)
+
+Available to any agent in the session via `mcp__agent-spawner__*` tools.
+
+### Agent management
+```
+spawn_agent(prompt, model?, cwd?)           → { id, status, startedAt }
+get_agent_status(id)                        → { id, status, text, lineCount, ... }
+collect_agent_result(id, timeoutMs?, pollMs?) → { status, text, handoff, ... }
+list_agents(statusFilter?)                  → [{ id, status, prompt, ... }]
+cancel_agent(id)                            → { id, status: "cancelled" }
+```
+
+**Model selection for sub-agents** — resolved in this order:
+1. `model` param passed to `spawn_agent` — per-agent override
+2. `OPENRUFLO_DEFAULT_MODEL` env var — system-wide propagation
+3. _(no --model flag passed)_ — sub-agent uses whatever model is selected in openruflo config/UI
+
+This means **by default, sub-agents inherit the model you have selected** in the parent session. You never need to specify `model` unless you want a specific agent to use a different one.
+
+**Model ID format**: `provider/model-id`
+```
+anthropic/claude-opus-4-5
+anthropic/claude-sonnet-4-5
+openai/gpt-4o
+openai/o3
+google/gemini-2.5-pro
+google/gemini-2.5-flash
+```
+
+**Override example** — use a fast/cheap model for research sub-agents, big model for implementation:
+```
+spawn_agent("Research the best approach for...", model="google/gemini-2.5-flash")
+spawn_agent("Implement the solution based on...", model="anthropic/claude-opus-4-5")
+```
+
+### Handoff
+```
+read_handoff(id)     → HandoffEnvelope { status, summary, files, next, rawText }
+list_handoffs()      → [{ agentId, status, summary, fileCount, nextCount }]
+```
+
+### Task tracking
+```
+task_create(type, description, priority?)   → { exitCode, output }
+task_list(all?)                             → { exitCode, output }
+task_status(id)                             → { exitCode, output }
+task_cancel(id)                             → { exitCode, output }
+task_assign(id, agent)                      → { exitCode, output }
+task_retry(id)                              → { exitCode, output }
+```
+
+---
+
+## Memory System
+
+openruflo uses ruflo's semantic memory for session persistence.
+
+### Initialize
+```bash
+ruflo memory init        # creates .claude/memory.db in the project
+```
+
+### Store
+```bash
+ruflo memory store -k "decision:use-bun" -v "We chose Bun for native TS and speed"
+```
+
+### Search
+```bash
+ruflo memory search -q "why did we choose the build tool"
+```
+
+### How it's used automatically
+- **Session start**: ruflo-bridge searches memory for goals, active projects, recent decisions, and injects them into the session context
+- **Session end**: ruflo-bridge snapshots the session summary to `session:summary:{sessionId}`
+- **Slash commands**: `/standup`, `/wrap-up`, `/dump`, `/wins`, `/brag`, `/peer`, `/retro` all read from and write to memory
+
+---
+
+## Notification Hooks
+
+ruflo-bridge fires desktop notifications for key events:
+
+| Event | Urgency | Message |
+|---|---|---|
+| Session idle | Low | "ruflo: agent idle" |
+| Task complete (idle after work) | Normal | "ruflo: task complete" |
+| Permission request (non-auto) | Critical | "ruflo: permission required — {tool}" |
+| Session error | Critical | "ruflo: session error" |
+
+Requires `ruflo notify` to be configured (uses system notifications via ruflo).
+
+---
+
+## AI Coding Dictionary (Skill)
+
+openruflo includes a global skill with precise vocabulary for AI coding — loaded on demand, zero token cost when not relevant.
+
+**Terms covered**: model, parameters, training, inference, token, next-token prediction, non-determinism, harness, context window, session, turn, tool, tool call, tool result, permission mode, agent mode, sycophancy, hallucination, smart zone, dumb zone, attention degradation, clearing, handoff, handoff artifact, compaction, autocompact, memory system, progressive disclosure, skill, subagent, human-in-the-loop, AFK, automated check, vibe coding, grilling, and more.
+
+The skill is at: `%APPDATA%\opencode\skill\ai-coding-dictionary\SKILL.md`
+
+---
+
+## Do Agents Use These Automatically?
+
+**Yes — session context** is injected automatically via ruflo-bridge at session start. Every agent sees current goals, active projects, recent decisions, and open tasks without you doing anything.
+
+**Yes — permissions** for ruflo and agent-spawner tools are auto-approved without prompting.
+
+**Yes — memory snapshots** happen automatically on session end.
+
+**Slash commands** must be explicitly invoked (by you, or by an agent instructed to use them in its prompt). When using `/ruflo`, sub-agents spawned in that workflow have full access to all slash commands and MCP tools.
+
+To make sub-agents use the workflow commands, include in their prompt:
+> "At the end, run /wrap-up to file your decisions and wins."
+
+---
+
+## Building from Source (Windows)
+
+```powershell
+# Install dependencies
+cd packages/opencode
+bun install
+
+# Build for current platform only (avoids OOM)
+bun run build:win
+
+# Output
+dist/openruflo-windows-x64/bin/openruflo.exe
+```
+
+The `build:win` script sets `BUN_JSC_largeHeapSize=2147483648` and `--smol` to avoid the JSC heap OOM that occurs on Windows x64 with the default 32MB ceiling.
+
+---
+
+## Repository Structure
+
+```
+openruflo/
+├── packages/
+│   ├── opencode/          # Core openruflo binary (fork of opencode)
+│   │   └── src/plugin/ruflo-bridge/   # Ruflo bridge plugin
+│   └── app/               # Web UI
+├── agent-spawner/         # Standalone MCP server for sub-agent orchestration
+├── bridge-build/          # Ruflo bridge source (synced to packages/opencode)
+└── README.md              # This file
+```
+
+Global config (available in all sessions):
+```
+%APPDATA%\opencode\
+├── openruflo.json          # MCP server registrations
+├── command/                # Slash commands
+│   ├── ruflo.md
+│   ├── standup.md
+│   ├── dump.md
+│   ├── wrap-up.md
+│   ├── tasks.md
+│   ├── goals.md
+│   ├── projects.md
+│   ├── wins.md
+│   ├── decide.md
+│   ├── incident.md
+│   ├── retro.md
+│   ├── peer.md
+│   └── brag.md
+└── skill/
+    └── ai-coding-dictionary/SKILL.md
+```
+
+---
+
+## License
+
+MIT — fork of opencode (MIT)
