@@ -17,4 +17,6 @@ if (process.versions.bun !== expectedBunVersion) {
   console.warn(`Warning: Bun version ${process.versions.bun} differs from expected ${expectedBunVersion}`);
 }
 '
-bun typecheck
+# Scope typecheck to the packages openruflo actually modifies.
+# Full monorepo check crashes on upstream packages (tsgo goroutine overflow).
+bun turbo typecheck --filter=openruflo
