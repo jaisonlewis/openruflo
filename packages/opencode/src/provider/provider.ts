@@ -832,6 +832,19 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
           },
         },
       }),
+    // SAIA — GWDG's Scientific AI Access platform (OpenAI-compatible)
+    // API key obtained from https://kisski.gwdg.de
+    saia: Effect.fnUntraced(function* (provider: Info) {
+      const env = yield* dep.env()
+      const apiKey = provider.options?.apiKey ?? env["SAIA_API_KEY"]
+      return {
+        autoload: Boolean(apiKey),
+        options: {
+          baseURL: "https://chat-ai.academiccloud.de/v1",
+          ...(apiKey ? { apiKey } : {}),
+        },
+      }
+    }),
   }
 }
 
