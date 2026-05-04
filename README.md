@@ -13,10 +13,11 @@
 | Task tracking | ❌ | ✅ ruflo task CLI |
 | Notifications (idle/permission/error) | ❌ | ✅ ruflo bridge hooks |
 | Auto-approve ruflo/agent-spawner tools | ❌ | ✅ |
-| Workflow slash commands | ❌ | ✅ 13 commands |
+| Workflow slash commands | ❌ | ✅ 14 commands |
 | AI coding vocabulary skill | ❌ | ✅ on-demand |
 | Architectural decision logging | ❌ | ✅ /decide |
 | Brag Doc / perf review generation | ❌ | ✅ /brag, /peer |
+| Codebase knowledge graph | ❌ | ✅ graphify integration |
 
 ---
 
@@ -26,6 +27,7 @@
 - [sentrux](https://github.com/jaisonlewis/sentrux) installed and in PATH
 - Windows x64 / macOS / Linux
 - [Bun](https://bun.sh) ≥ 1.3.13 _(build from source only)_
+- [uv](https://docs.astral.sh/uv/) + [graphify](https://github.com/safishamsi/graphify) _(optional — knowledge graph)_
 
 ---
 
@@ -197,6 +199,12 @@ All commands are globally available in every session. Type them in the openruflo
 | `/peer` | Generate peer review / 360 feedback talking points |
 | `/brag` | Generate a Brag Document entry from wins and decisions |
 
+### Codebase Intelligence
+
+| Command | Description |
+|---|---|
+| `/graphify` | Map the codebase into a queryable knowledge graph — architecture, god nodes, dependencies |
+
 ---
 
 ## Sub-Agent Workflow (`/ruflo`)
@@ -321,6 +329,54 @@ ruflo memory search -q "why did we choose the build tool"
 - **Session start**: ruflo-bridge searches memory for goals, active projects, recent decisions, and injects them into the session context
 - **Session end**: ruflo-bridge snapshots the session summary to `session:summary:{sessionId}`
 - **Slash commands**: `/standup`, `/wrap-up`, `/dump`, `/wins`, `/brag`, `/peer`, `/retro` all read from and write to memory
+
+---
+
+## Knowledge Graph (graphify)
+
+openruflo integrates [graphify](https://github.com/safishamsi/graphify) for structural codebase intelligence. Once installed, agents automatically consult the graph before answering architecture questions.
+
+### Install
+
+```bash
+# Install uv (Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh   # macOS/Linux
+irm https://astral.sh/uv/install.ps1 | iex         # Windows
+
+# Install graphify
+uv tool install graphifyy
+graphify opencode install
+```
+
+### Build the graph
+
+```
+/graphify
+```
+
+Or from the CLI:
+
+```bash
+graphify .                # full build (AST + LLM for docs/images)
+graphify update .         # re-extract code only — no API cost
+```
+
+**Outputs** written to `graphify-out/`:
+- `GRAPH_REPORT.md` — god nodes, largest communities, cross-module surprises
+- `graph.json` — machine-queryable graph used by agents
+- `index.html` — interactive visualizer (open in browser)
+
+### Query the graph
+
+```bash
+graphify path "AuthService" "Database"   # shortest dependency path
+graphify explain "SessionManager"         # plain-language node explanation
+graphify query "how does auth work"       # semantic search
+```
+
+### How agents use it
+
+A `tool.execute.before` plugin is registered at `.opencode/plugins/graphify.js`. Before any bash tool call, if `graphify-out/graph.json` exists, agents are reminded to read `GRAPH_REPORT.md` first — so they navigate by graph structure rather than brute-force file scanning.
 
 ---
 
