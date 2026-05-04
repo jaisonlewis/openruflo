@@ -153,6 +153,33 @@ export function createRufloBridge(userOptions: Partial<RufloBridgeOptions> = {})
       ...options.statusline,
     });
 
+    // ── Auto-initialize ruflo in the project directory ──────────────────────
+    // If ruflo has never been initialized here, `ruflo hooks` and
+    // `ruflo memory store` will fail with "database not initialised".
+    // We run `ruflo init` (idempotent) and `ruflo memory init` silently on
+    // every bridge start so the user never has to run them manually.
+    await (async () => {
+      const initResult = await runShell(
+        ocCtx,
+        [options.cliCommand, ...options.cliArgs, 'init'],
+        15_000,
+        log,
+      );
+      if (initResult.exitCode !== 0 && !initResult.stderr.includes('already initialized')) {
+        await log.warn('ruflo init failed', { stderr: initResult.stderr.slice(0, 200) });
+      }
+
+      const memResult = await runShell(
+        ocCtx,
+        [options.cliCommand, ...options.cliArgs, 'memory', 'init'],
+        15_000,
+        log,
+      );
+      if (memResult.exitCode !== 0 && !memResult.stderr.includes('already exists')) {
+        await log.warn('ruflo memory init failed', { stderr: memResult.stderr.slice(0, 200) });
+      }
+    })().catch(() => undefined); // fire-and-forget; never block plugin startup
+
     // Start subsystems (this is the "init" phase)
     pool.start();
     await statusline.start();
