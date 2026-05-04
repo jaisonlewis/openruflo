@@ -13,7 +13,7 @@ import { Env } from "../env"
 import { applyEdits, modify } from "jsonc-parser"
 import { type InstanceContext } from "../project/instance"
 import { InstanceStore } from "../project/instance-store"
-import { InstallationLocal, InstallationVersion } from "@opencode-ai/core/installation/version"
+import { InstallationChannel, InstallationLocal, InstallationVersion } from "@opencode-ai/core/installation/version"
 import { existsSync } from "fs"
 import { GlobalBus } from "@/bus/global"
 import { Event } from "../server/event"
@@ -557,7 +557,10 @@ export const layer = Layer.effect(
               add: [
                 {
                   name: "@opencode-ai/plugin",
-                  version: InstallationLocal ? undefined : InstallationVersion,
+                  // Only pin the exact version for official "latest" releases.
+                  // Dev/master/local builds use undefined (→ latest on npm) because
+                  // the timestamp version (e.g. 0.0.0-master-...) is never published.
+                  version: (InstallationLocal || InstallationChannel !== "latest") ? undefined : InstallationVersion,
                 },
               ],
             })

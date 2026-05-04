@@ -212,26 +212,50 @@ export class AgentPool {
     }
   }
 
-  /** Build and run a `ruflo agent-pool <sub>` command. */
+  /**
+   * Build and run a ruflo hooks command mapped from pool subcommand.
+   *
+   * ruflo has no `agent-pool` top-level command. The correct mapping is:
+   *   dispatch        → `ruflo hooks route`  (-t <prompt>)
+   *   task-completed  → `ruflo hooks task-completed`
+   *   teammate-idle   → `ruflo hooks teammate-idle`
+   */
   private async callPool(
     sub: PoolSubcommand,
     extraArgs: Record<string, string> = {},
   ): Promise<void> {
+    // 'dispatch' → 'route'; the other two match ruflo hooks names directly.
+    const hooksSub = sub === 'dispatch' ? 'route' : sub;
+
     const args: string[] = [
       this.options.cliCommand,
       ...this.options.cliArgs,
-      'agent-pool',
-      sub,
+      'hooks',
+      hooksSub,
     ];
+
     if (this.currentSessionId) {
       args.push('--session-id', this.currentSessionId);
     }
-    for (const [k, v] of Object.entries(extraArgs)) {
-      args.push(k, v);
+
+    if (sub === 'dispatch') {
+      // ruflo hooks route uses -t <task> for the prompt text.
+      if (extraArgs['--prompt']) {
+        args.push('-t', extraArgs['--prompt']);
+      }
+      // Forward task-id for tracing (accepted as --task-id if ruflo supports it).
+      if (extraArgs['--task-id']) {
+        args.push('--task-id', extraArgs['--task-id']);
+      }
+    } else {
+      for (const [k, v] of Object.entries(extraArgs)) {
+        args.push(k, v);
+      }
     }
+
     const result = await runShell(this.ctx, args, this.options.timeoutMs, this.log);
     if (result.exitCode !== 0) {
-      await this.log.warn(`agent-pool ${sub} exited ${result.exitCode}`, {
+      await this.log.warn(`agent-pool ${sub} (hooks ${hooksSub}) exited ${result.exitCode}`, {
         timedOut: result.timedOut,
         stderr: result.stderr.slice(0, 200),
       });

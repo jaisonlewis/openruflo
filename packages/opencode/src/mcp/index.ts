@@ -173,7 +173,14 @@ function fetchFromClient<T extends { name: string }>(
   return Effect.tryPromise({
     try: () => listFn(client),
     catch: (e: any) => {
-      log.error(`failed to get ${label}`, { clientName, error: e.message })
+      // -32601 = method not found: many MCP servers don't implement optional
+      // resources/list or prompts/list. Downgrade to warn (non-fatal).
+      const isMissingMethod = typeof e?.message === "string" && e.message.includes("-32601")
+      if (isMissingMethod) {
+        log.warn(`failed to get ${label}`, { clientName, error: e.message })
+      } else {
+        log.error(`failed to get ${label}`, { clientName, error: e.message })
+      }
       return e
     },
   }).pipe(

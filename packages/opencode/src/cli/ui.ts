@@ -3,11 +3,12 @@ import { EOL } from "os"
 import { NamedError } from "@opencode-ai/core/util/error"
 import { logo as glyphs } from "./logo"
 
+// O     P     E     N     R     U     F     L     O
 const wordmark = [
-  `⠀                                ▄     `,
-  `█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█`,
-  `█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀`,
-  `▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀`,
+  `⠀                                                ▄     `,
+  `█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀█ █  █ █▀▀▀ █    █▀▀█`,
+  `█  █ █  █ █▀▀▀ █  █ █▀▀▀ █  █ █▀▀▀ █    █  █`,
+  `▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ █  █ ▀▀▀▀ █    ▀▀▀▀ ▀▀▀▀`,
 ]
 
 export const CancelledError = NamedError.create("UICancelledError", z.void())
