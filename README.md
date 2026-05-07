@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/jaisonlewis-openruflo-badge.png)](https://mseep.ai/app/jaisonlewis-openruflo)
+
 # openruflo
 
 > openruflo is a fork of [opencode](https://github.com/opencode-ai/opencode) v1.14.33 with deep ruflo integration — persistent memory, sub-agent orchestration, task tracking, notification hooks, and a full workflow command set.
